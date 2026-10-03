@@ -184,6 +184,7 @@ export function transition(
           "Receive all requested documents before scheduling",
         );
       if (
+        typeof action.appointment !== "string" ||
         !action.appointment ||
         !Number.isFinite(Date.parse(action.appointment)) ||
         Date.parse(action.appointment) <= now.getTime()

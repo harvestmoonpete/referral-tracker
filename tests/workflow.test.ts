@@ -226,3 +226,42 @@ test("requesting another document reopens ready referral and invalid appointment
     }),
   );
 });
+
+test("non-string appointment JSON is rejected without changing referral or audit state", async () => {
+  const server = await app(memoryStore());
+  try {
+    const login = await server.inject({
+      method: "POST",
+      url: "/api/login",
+      payload: { userId: "coordinator", password: "demo-care-2026" },
+    });
+    const cookie = String(login.headers["set-cookie"]).split(";")[0];
+    const before = (
+      await server.inject({ url: "/api/workspace", headers: { cookie } })
+    ).json();
+    for (const appointment of [9999, ["9999"], {}, true, null]) {
+      const result = await server.inject({
+        method: "POST",
+        url: "/api/workspace",
+        headers: { cookie },
+        payload: {
+          referralId: "RF-1043",
+          action: { type: "schedule", appointment },
+        },
+      });
+      assert.equal(
+        result.statusCode,
+        400,
+        `invalid appointment: ${JSON.stringify(appointment)}`,
+      );
+      assert.deepEqual(
+        (
+          await server.inject({ url: "/api/workspace", headers: { cookie } })
+        ).json(),
+        before,
+      );
+    }
+  } finally {
+    await server.close();
+  }
+});

@@ -82,3 +82,7 @@ GitHub Actions runs checks, tests, builds, and Compose integration before publis
 ## License
 
 MIT. Built as a portfolio demonstration using synthetic data only.
+
+### Browser contrast regression checks
+
+Run `npx playwright install chromium` once, then `npm run test:browser`. CI checks rendered text contrast on desktop and mobile, including populated workflow states, using axe. Tests serve the built app under its repository subpath. These focused checks do not establish full accessibility conformance.
