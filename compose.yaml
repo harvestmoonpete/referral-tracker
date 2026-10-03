@@ -1,0 +1,50 @@
+name: referral-tracker
+services:
+  postgres:
+    image: postgres:17.7-alpine
+    environment:
+      POSTGRES_USER: referral
+      POSTGRES_PASSWORD: demo-local-only
+      POSTGRES_DB: referrals
+    volumes: ["referral-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U referral -d referrals"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  api:
+    build:
+      context: .
+      target: api
+    environment:
+      DATABASE_URL: postgres://referral:demo-local-only@postgres:5432/referrals
+      STALLED_DAYS: ${STALLED_DAYS:-7}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  web:
+    build:
+      context: .
+      target: web
+    ports: ["127.0.0.1:8083:80"]
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  referral-data:
