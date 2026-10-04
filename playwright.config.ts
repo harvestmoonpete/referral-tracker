@@ -11,7 +11,7 @@ export default defineConfig({
     { name: 'mobile', use: { viewport: { width: 390, height: 844 } } },
   ],
   webServer: {
-    command: 'npm run build -- --base=/referral-tracker/ && npx vite preview --host 127.0.0.1 --port 5197 --strictPort',
+    command: 'npm run build -- --base=/referral-tracker/ && npx vite preview --base=/referral-tracker/ --host 127.0.0.1 --port 5197 --strictPort',
     url: 'http://127.0.0.1:5197/referral-tracker/',
     reuseExistingServer: false,
   },
